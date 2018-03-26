@@ -1,0 +1,534 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Static Typescript Client</title>
+    <meta name="description" content="3 Steps to generate static typescript client">
+    <meta name="author" content="Michał Niegrzybowski">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="//code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="//code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/moon.css" id="theme">
+    <link type="text/css" rel="stylesheet" href="fsharp.formatting/styles/style.css" />
+    <link type="text/css" rel="stylesheet" href="fsharp.formatting/styles/deedle.css" />
+    <link type="text/css" rel="stylesheet" href="css/custom.css" />
+    <script src="fsharp.formatting/styles/tips.js" type="text/javascript"></script>
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <link rel="stylesheet" href="css/fsreveal.css">
+    <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+    <script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+    </script>
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+    <script language="javascript" type="text/javascript">
+        function init()
+        {
+            websocket = new WebSocket("ws://"+window.location.host+"/websocket");
+            websocket.onmessage = function(evt) { location.reload(); };
+        }
+        window.addEventListener("load", init, false);
+    </script>
+</head>
+<body>
+    <div class="reveal">
+        
+        <!-- Any section element inside of this container is displayed as a slide -->
+        <div class="slides">
+            <section >
+<h2>Static Typescript Client</h2>
+<br />
+<br />
+<h3>3 Steps to generate static typescript client</h3>
+<p><br />
+<br />
+Michał Niegrzybowski - <a href="http://www.twitter.com/mnie8">@mnie8</a></p>
+</section>
+<section >
+<section >
+<h2>What we need</h2>
+</section>
+<section >
+<h2>Concrete return types</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> JsonResult Save(<span class="k">int</span> userId)
+{
+    <span class="k">var</span> r <span class="o">=</span> _someService.DoSomething(userId);
+    <span class="k">return</span> <span class="k">new</span> JsonResult(r, JsonResult.AllowGet);
+}
+</code></pre></td></tr></table>
+</section>
+<section >
+<h2>Concrete parameters types</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> JsonResult GetTable(<span class="k">string</span> data)
+{
+    <span class="k">var</span> d <span class="o">=</span> JsonConvert.DeserializeObject&lt;TableParameters&gt;(data);
+    <span class="k">var</span> r <span class="o">=</span> _someService.DoSomething(d);
+    <span class="k">return</span> <span class="k">new</span> JsonResult(r, JsonResult.AllowGet);
+}
+</code></pre></td></tr></table>
+</section>
+<section >
+<h2>Some tool to do it automatically</h2>
+<ul>
+<li><a href="https://github.com/frhagn/Typewriter">TypeWriter</a></li>
+<li><a href="https://github.com/zijianhuang/webapiclientgen">Webapiclientgen</a></li>
+</ul>
+</section>
+</section>
+<section >
+<section >
+<h2>Step 1</h2>
+</section>
+<section >
+<h2>Remove all explicit deserialization</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> JsonResult GetTable(<span class="k">string</span> data)
+{
+    <span class="k">var</span> d <span class="o">=</span> JsonConvert.DeserializeObject&lt;TableParameters&gt;(data);
+    <span class="k">var</span> r <span class="o">=</span> _someService.DoSomething(d);
+    <span class="k">return</span> <span class="k">new</span> JsonResult(r, JsonResult.AllowGet);
+}
+</code></pre></td></tr></table>
+</section>
+<section >
+<h2>Custom binder</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">internal</span> <span class="k">class</span> CustomModelBinder <span class="o">:</span> IModelBinder
+{
+    <span class="k">private</span> <span class="k">readonly</span> Type _type;
+    <span class="k">public</span> CustomModelBinder(Type @type)
+    {
+        _type <span class="o">=</span> @type;
+    }
+
+    <span class="k">public</span> <span class="k">object</span> BindModel(ControllerContext c, ModelBindingContext mb)
+    {
+        <span class="k">var</span> json <span class="o">=</span> controllerContext
+            .HttpContext
+            .Request
+            .Params
+            .Get(mb.ModelName);
+
+        <span class="k">return</span> json <span class="o">=</span><span class="o">=</span> <span class="k">null</span>
+            <span class="o">?</span> <span class="k">null</span>
+            <span class="o">:</span> JsonConvert.DeserializeObject(json, _type);
+    }
+}
+</code></pre></td></tr></table>
+</section>
+<section >
+<h2>Custom binder</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">private</span> <span class="k">static</span> <span class="k">readonly</span> IReadOnlyCollection&lt;Type&gt; CustomBinderTypes <span class="o">=</span> 
+<span class="k">new</span>[] {
+    <span class="k">typeof</span>(TypeA),
+    <span class="k">typeof</span>(TypeB)
+};
+
+<span class="k">protected</span> <span class="k">void</span> Application_Start()
+{
+    …
+    CustomBinderTypes
+        .ForEach(t <span class="o">=</span><span class="o">&gt;</span> ModelBinders
+            .Binders
+            .Add(t, <span class="k">new</span> CustomModelBinder(t))
+        );
+    …
+}
+</code></pre></td></tr></table>
+</section>
+<section >
+<h2>Final result</h2>
+<p>From:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> JsonResult GetTable(<span class="k">string</span> data)
+{
+    <span class="k">var</span> d <span class="o">=</span> JsonConvert.DeserializeObject&lt;TableParameters&gt;(data);
+    <span class="k">var</span> r <span class="o">=</span> _someService.DoSomething(d);
+    <span class="k">return</span> <span class="k">new</span> JsonResult(r, JsonResult.AllowGet);
+}
+</code></pre></td></tr></table>
+<p>To:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> JsonResult GetTable(TableParameters data)
+{
+    <span class="k">var</span> r <span class="o">=</span> _someService.DoSomething(data);
+    <span class="k">return</span> <span class="k">new</span> JsonResult(r, JsonResult.AllowGet);
+}
+</code></pre></td></tr></table>
+</section>
+</section>
+<section >
+<section >
+<h2>Step 2</h2>
+</section>
+<section >
+<h2>Return concrete types instead of Json/ActionResult</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> JsonResult Save(<span class="k">int</span> userId)
+{
+    <span class="k">var</span> r <span class="o">=</span> _someService.DoSomething(userId);
+    <span class="k">return</span> <span class="k">new</span> JsonResult(r, JsonResult.AllowGet);
+}
+</code></pre></td></tr></table>
+</section>
+<section >
+<h2>Use Controller Action Invoker</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> <span class="k">class</span> WebApiInvoker <span class="o">:</span> AsyncControllerActionInvoker
+{
+    <span class="k">protected</span> <span class="k">override</span> ActionResult CreateActionResult(
+        ControllerContext c,
+        ActionDescriptor a,
+        <span class="k">object</span> <span class="k">value</span>
+    )
+    {
+        <span class="k">var</span> @type <span class="o">=</span> (a <span class="k">as</span> ReflectedActionDescriptor)
+            <span class="o">?</span>.MethodInfo
+            <span class="o">?</span>.ReturnType;
+
+        <span class="k">return</span> <span class="k">typeof</span>(ActionResult).IsAssignableFrom(@type)
+            <span class="o">?</span> <span class="k">base</span>.CreateActionResult(c, a, <span class="k">value</span>)
+            <span class="o">:</span> <span class="k">new</span> JsonResult(){data <span class="o">=</span> <span class="k">value</span> …};
+    }
+}
+</code></pre></td></tr></table>
+</section>
+<section >
+<h2>What if we don't check return type?</h2>
+<img src="http://www.mnie.me/img/24-03-2018StaticClient/image.png"></img>
+</section>
+<section >
+<h2>How to use it? #1</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> SomeController <span class="o">:</span> Controller
+{
+    <span class="k">public</span> SomeController()
+    {
+        ActionInvoker <span class="o">=</span> <span class="k">new</span> WebApiInvoker();
+    }
+}
+</code></pre></td></tr></table>
+</section>
+<section >
+<h2>How to use it? #2</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">internal</span> <span class="k">class</span> ServiceLocatorControllerFactory
+    <span class="o">:</span> DefaultControllerFactory
+{
+    <span class="k">protected</span> <span class="k">override</span> IController GetControllerInstance(
+        RequestContext r, 
+        Type t
+    )
+    {
+        <span class="k">var</span> con <span class="o">=</span> (Controller) ServiceLocator.Current.GetInstance(t);
+        con.ActionInvoker <span class="o">=</span> <span class="k">new</span> WebApiInvoker();
+        <span class="k">return</span> con;
+    }
+}
+</code></pre></td></tr></table>
+</section>
+</section>
+<section >
+<section >
+<h2>Step 3</h2>
+</section>
+<section >
+<h2>Use TypeWriter</h2>
+</section>
+<section >
+<h2>Basic Template</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="typescript">${
+    <span class="k">using</span> Typewriter.Extensions.WebApi;
+}
+
+<span class="k">import</span> { CallService } <span class="k">from</span> <span class="s">"../core/core.module"</span>;
+<span class="k">module</span> App { $Classes(*Controller)[
+    <span class="k">export</span> <span class="k">class</span> $Name {
+        <span class="k">constructor</span>(<span class="k">private</span> http: CallService) {
+        } $Methods[
+        
+        <span class="k">public</span> $name <span class="o">=</span> ($Parameters[$name: $Type][, ]) <span class="o">=</span><span class="o">&gt;</span> {
+            <span class="k">return</span> <span class="k">this</span>.http.$HttpMethod(`$Url`, $RequestData);
+        }]
+    }]
+}
+</code></pre></td></tr></table>
+</section>
+<section >
+<h2>Final solution</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="typescript"><span class="k">import</span> { Injectable } <span class="k">from</span> <span class="s">"@angular/core"</span>;
+<span class="k">import</span> { Observable } <span class="k">from</span> <span class="s">"rxjs"</span>;
+<span class="k">import</span> { CallService } <span class="k">from</span> <span class="s">"../core/core.module"</span>;
+$Classes($ShouldScanController)[$ImportStatements
+
+@Injectable()
+<span class="k">export</span> <span class="k">class</span> $Name {
+    <span class="k">constructor</span>(<span class="k">private</span> callService: CallService) {
+    } $Methods[
+        
+    <span class="k">public</span> $NameFromRoute <span class="o">=</span> ($Parameters[$name: $Type][, ]): Observable&lt;$Type&gt; <span class="o">=</span><span class="o">&gt;</span> {
+        <span class="k">return</span> <span class="k">this</span>.callService.$MethodType(`$Url`, $RequestData);
+    }]
+}]
+</code></pre></td></tr></table>
+</section>
+<section >
+<h2>Final solution</h2>
+<p>Show template in Visual Studio.</p>
+</section>
+<section >
+<h2>Example of generated contract</h2>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="typescript"><span class="k">import</span> { Injectable } <span class="k">from</span> <span class="s">"@angular/core"</span>;
+<span class="k">import</span> { Observable } <span class="k">from</span> <span class="s">"rxjs"</span>;
+<span class="k">import</span> { CallService } <span class="k">from</span> <span class="s">"../core/core.module"</span>;
+<span class="k">import</span> { Result } <span class="k">from</span> <span class="s">"../contract/Result"</span>;
+
+
+@Injectable()
+<span class="k">export</span> <span class="k">class</span> ExportRefreshController {
+    <span class="k">constructor</span>(<span class="k">private</span> callService: CallService) {
+    } 
+        
+    <span class="k">public</span> html <span class="o">=</span> (queryId: number): Observable&lt;<span class="k">string</span>&gt; <span class="o">=</span><span class="o">&gt;</span> {
+        <span class="k">return</span> <span class="k">this</span>.callService.post(`v<span class="n">1</span>/excel/html?queryId=${queryId}`, <span class="k">null</span>);
+    }
+}
+</code></pre></td></tr></table>
+</section>
+</section>
+<section >
+<section >
+<h2>Summary</h2>
+</section>
+<section >
+<h2>Pros</h2>
+<ul>
+<li>no more hardcoded paths</li>
+<li>if controller changes, contract also changes</li>
+<li>no more mistakes in types of call post/get</li>
+<li>you want to call FilterController, you inject FilterController</li>
+</ul>
+</section>
+<section >
+<h2>Cons</h2>
+<ul>
+<li><a href="https://github.com/frhagn/Typewriter/issues/262">What if we are bad at method naming and http types</a></li>
+<li><a href="https://github.com/frhagn/Typewriter/issues/261">Route Area is not resolved correctly</a></li>
+<li>Problems with methods which accepts several verbs</li>
+<li>Controllers with concrete return types and ActionResults (for example for Download)</li>
+</ul>
+</section>
+</section>
+<section >
+<h2>Thanks</h2>
+</section>
+
+
+        </div>
+    </div>
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+    <script>
+        // Add the nohighlight class and data-noescape attribute to code elements that have already been formatted by FSharp.Formatting
+        $('pre.highlighted code').addClass('nohighlight').attr('data-noescape', '');
+
+        // Full list of configuration options available here:
+        // https://github.com/hakimel/reveal.js#configuration
+        Reveal.initialize({
+            controls: true,
+            progress: true,
+            history: true,
+            center: true,
+
+            transition: 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+            // Parallax scrolling
+            // parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+            // parallaxBackgroundSize: '2100px 900px',
+
+            // Optional libraries used to extend on reveal.js
+            dependencies: [
+                { src: 'lib/js/classList.js', condition: function () { return !document.body.classList; } },
+                { src: 'plugin/markdown/marked.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
+                { src: 'plugin/markdown/markdown.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
+                { src: 'plugin/highlight/highlight.js', async: true, callback: function () { hljs.initHighlightingOnLoad(); } },
+                { src: 'plugin/zoom-js/zoom.js', async: true, condition: function () { return !!document.body.classList; } },
+                { src: 'plugin/notes/notes.js', async: true, condition: function () { return !!document.body.classList; } }
+            ]
+        });
+
+    </script>
+</body>
+</html>
+
